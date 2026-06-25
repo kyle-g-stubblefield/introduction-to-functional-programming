@@ -9,6 +9,9 @@
     "repl":  "shadow-cljs cljs-repl app",
     "clean": "rm -rf public/js out .shadow-cljs"
   },
+  "dependencies": {
+    "p5": "1.9.4"
+  },
   "devDependencies": {
     "shadow-cljs": "2.27.1"
   }
