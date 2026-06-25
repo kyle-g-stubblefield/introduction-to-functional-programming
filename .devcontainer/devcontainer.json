@@ -1,0 +1,42 @@
+{
+  "name": "Clojure FP Classroom",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "forwardPorts": [8080, 9630],
+  "portsAttributes": {
+    "8080": {
+      "label": "Game (browser)",
+      "onAutoForward": "openBrowser"
+    },
+    "9630": {
+      "label": "shadow-cljs dashboard",
+      "onAutoForward": "silent"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "betterthanbefore.calva",
+        "usernamehw.errorlens",
+        "gruntfuggly.todo-tree"
+      ],
+      "settings": {
+        "editor.formatOnSave": false,
+        "calva.paredit.defaultKeyMap": "strict",
+        "editor.fontFamily": "'Cascadia Code', 'Fira Code', monospace",
+        "editor.fontLigatures": true,
+        "editor.bracketPairColorization.enabled": true,
+        "editor.guides.bracketPairs": true,
+        "[clojure]": {
+          "editor.wordSeparators": "\t ()\"':,;~@#$%^&{}[]`",
+          "editor.autoClosingBrackets": "always",
+          "editor.autoClosingQuotes": "always"
+        }
+      }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "remoteUser": "codespace"
+}
