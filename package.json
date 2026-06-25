@@ -1,0 +1,15 @@
+{
+  "name": "clojure-fp-game",
+  "version": "0.1.0",
+  "description": "Functional programming game project — Programming 2",
+  "scripts": {
+    "dev":   "shadow-cljs watch app",
+    "build": "shadow-cljs release app",
+    "test":  "shadow-cljs compile test && node out/test/tests.js",
+    "repl":  "shadow-cljs cljs-repl app",
+    "clean": "rm -rf public/js out .shadow-cljs"
+  },
+  "devDependencies": {
+    "shadow-cljs": "2.27.1"
+  }
+}

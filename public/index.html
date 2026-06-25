@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FP Game — Programming 2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #89b4fa;
+      letter-spacing: 0.05em;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #6c7086;
+    }
+
+    #canvas {
+      border: 2px solid #313244;
+      border-radius: 4px;
+      display: block;
+    }
+
+    footer {
+      font-size: 0.75rem;
+      color: #45475a;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Programming 2</h1>
+    <span class="subtitle">functional game project</span>
+  </header>
+
+  <canvas id="canvas"></canvas>
+
+  <footer>built with ClojureScript + quil</footer>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
