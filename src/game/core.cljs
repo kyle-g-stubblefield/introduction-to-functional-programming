@@ -1,46 +1,53 @@
 (ns game.core
-  "Entry point. Wires together setup/update/draw — the big-bang pattern.
-  
-  This namespace should stay small. Add game logic to game.state and game.draw."
-  (:require [quil.core :as q]
-            [quil.middleware :as m]
-            [game.state :as state]
+  "Entry point. Creates the p5 sketch and wires the big-bang pattern.
+
+  p5 is loaded as a global via <script> tag in index.html.
+  We use p5's instance mode so the sketch is self-contained
+  and doesn't pollute the global namespace."
+  (:require [game.state :as state]
             [game.draw  :as draw]))
 
 ;; ---------------------------------------------------------------------------
-;; Sketch definition
+;; p5 instance mode — the big-bang equivalent
 ;; ---------------------------------------------------------------------------
-;; This is the ClojureScript equivalent of Racket's big-bang:
+;; p5 instance mode takes a function that receives the p5 object (here: `p`).
+;; We attach setup/draw/keyPressed to it, then mount to the canvas element.
 ;;
-;;   (big-bang initial-state
-;;     [on-tick  update-state]   →  :update  state/update-state
-;;     [to-draw  draw-state]     →  :draw    draw/draw-state
-;;     [on-key   handle-key])    →  :key-pressed state/handle-key
-;;
-;; :middleware [m/fun-mode] is what enables the pure functional update pattern.
-;; Without it, quil uses mutable state internally. Always include it.
+;; This maps directly onto big-bang:
+;;   setup        → returns initial state, stored in an atom
+;;   draw         → calls draw/draw-state with current state each frame
+;;   keyPressed   → calls state/handle-key, swaps the atom
 
-(defn- setup []
-  (q/frame-rate 60)
-  (state/initial-state))
+(defonce !state (atom nil))
 
-(q/defsketch game
-  :host       "canvas"
-  :size       [800 600]
-  :setup      setup
-  :update     state/update-state
-  :draw       draw/draw-state
-  :key-pressed state/handle-key
-  :middleware  [m/fun-mode])
+(defn- make-sketch [p]
+  ;; setup — runs once
+  (set! (.-setup p)
+        (fn []
+          (.createCanvas p state/canvas-width state/canvas-height)
+          (.frameRate p 60)
+          (reset! !state (state/initial-state))))
 
-;; ---------------------------------------------------------------------------
-;; Hot reload hook — shadow-cljs calls this after each file save
-;; ---------------------------------------------------------------------------
-(defn ^:dev/after-load reload []
-  ;; quil re-runs the sketch automatically; nothing needed here usually.
-  ;; Add any dev-time reset logic if needed.
-  )
+  ;; draw — runs every frame, pure read of state
+  (set! (.-draw p)
+        (fn []
+          (draw/draw-state p @!state)))
+
+  ;; keyPressed — pure state transition via swap!
+  (set! (.-keyPressed p)
+        (fn []
+          (swap! !state state/handle-key
+                 {:key (keyword (.-key p))}))))
+
+(defonce sketch-instance (atom nil))
 
 (defn init []
-  ;; Called once when the page first loads (see shadow-cljs.edn :init-fn)
-  )
+  (let [instance (new js/p5 make-sketch
+                      (.getElementById js/document "canvas"))]
+    (reset! sketch-instance instance)))
+
+;; Hot reload — remove old sketch and restart
+(defn ^:dev/after-load reload []
+  (when-let [s @sketch-instance]
+    (.remove s))
+  (init))

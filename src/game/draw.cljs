@@ -1,82 +1,90 @@
 (ns game.draw
   "Rendering functions. Side effects live here and only here.
-  
-  draw-state receives the current state and renders it to the canvas.
-  It must never modify state — only read from it.
-  
-  This separation is the core FP architecture insight:
-    pure logic  →  game.state
-    side effects →  game.draw  (this file)"
-  (:require [quil.core :as q]
-            [game.state :as state]))
+
+  draw-state receives the p5 instance and current state,
+  and renders it to the canvas. It never modifies state.
+
+  All p5 calls go through the `p` instance — never via js/p5 globals.
+  This is p5 instance mode: safe, encapsulated, no global pollution.
+
+  FP architecture:
+    pure logic   → game.state
+    side effects → game.draw  (this file)")
 
 ;; ---------------------------------------------------------------------------
-;; Color palette
+;; Color helpers
 ;; ---------------------------------------------------------------------------
 
-(def background-color [30 30 46])    ; dark navy
-(def floor-color      [69 71 90])    ; muted purple-grey
-(def player-color     [137 180 250]) ; soft blue
-(def text-color       [205 214 244]) ; near white
-(def accent-color     [243 139 168]) ; pink
+(defn- fill! [p r g b]
+  (.fill p r g b))
+
+(defn- fill-alpha! [p r g b a]
+  (.fill p r g b a))
+
+(defn- no-stroke! [p]
+  (.noStroke p))
+
+(defn- stroke! [p r g b]
+  (.stroke p r g b))
 
 ;; ---------------------------------------------------------------------------
 ;; Component draw functions
 ;; ---------------------------------------------------------------------------
-;; Each function draws one part of the scene.
-;; Convention: draw-* functions take only what they need, not the whole state.
 
-(defn draw-background []
-  (apply q/background background-color))
+(defn- draw-background! [p]
+  (.background p 30 30 46))
 
-(defn draw-floor []
-  (apply q/fill floor-color)
-  (q/no-stroke)
-  (q/rect 0 (- state/canvas-height 10)
-          state/canvas-width 10))
+(defn- draw-floor! [p canvas-height canvas-width]
+  (fill! p 69 71 90)
+  (no-stroke! p)
+  (.rect p 0 (- canvas-height 10) canvas-width 10))
 
-(defn draw-player [player]
-  (apply q/fill player-color)
-  (q/no-stroke)
-  (q/ellipse (:x player)
-             (:y player)
-             (* 2 (:radius player))
-             (* 2 (:radius player))))
+(defn- draw-player! [p player]
+  (fill! p 137 180 250)
+  (no-stroke! p)
+  (.ellipse p
+            (:x player)
+            (:y player)
+            (* 2 (:radius player))
+            (* 2 (:radius player))))
 
-(defn draw-score [score]
-  (apply q/fill text-color)
-  (q/text-size 20)
-  (q/text (str "Score: " score) 20 36))
+(defn- draw-score! [p score]
+  (fill! p 205 214 244)
+  (.textSize p 20)
+  (.text p (str "Score: " score) 20 36))
 
-(defn draw-controls []
-  (apply q/fill (conj text-color 120)) ; semi-transparent
-  (q/text-size 14)
-  (q/text "← → move   ↑ jump   space stop   p pause   r reset"
-          20
-          (- state/canvas-height 20)))
+(defn- draw-controls! [p canvas-height]
+  (fill-alpha! p 205 214 244 120)
+  (.textSize p 14)
+  (.text p
+         "← → move   ↑ jump   space stop   p pause   r reset"
+         20
+         (- canvas-height 20)))
 
-(defn draw-pause-overlay []
-  (q/fill 0 0 0 140)
-  (q/rect 0 0 state/canvas-width state/canvas-height)
-  (apply q/fill accent-color)
-  (q/text-size 48)
-  (q/text-align :center :center)
-  (q/text "PAUSED" (/ state/canvas-width 2) (/ state/canvas-height 2))
-  (q/text-align :left :baseline))
+(defn- draw-pause-overlay! [p canvas-width canvas-height]
+  (fill-alpha! p 0 0 0 140)
+  (.rect p 0 0 canvas-width canvas-height)
+  (fill! p 243 139 168)
+  (.textSize p 48)
+  (.textAlign p (.-CENTER p) (.-CENTER p))
+  (.text p "PAUSED" (/ canvas-width 2) (/ canvas-height 2))
+  (.textAlign p (.-LEFT p) (.-BASELINE p)))
 
 ;; ---------------------------------------------------------------------------
-;; Main draw function — called every frame by quil
+;; Main draw function
 ;; ---------------------------------------------------------------------------
 
 (defn draw-state
-  "GameState -> nil (side effects only)
-  Renders the current state to the canvas.
+  "p5 GameState -> nil (side effects only)
+  Renders the current state to the canvas each frame.
   The to-draw equivalent from big-bang."
-  [state]
-  (draw-background)
-  (draw-floor)
-  (draw-player (:player state))
-  (draw-score (:score state))
-  (draw-controls)
-  (when (:paused? state)
-    (draw-pause-overlay)))
+  [p state]
+  (let [w (.-width p)
+        h (.-height p)]
+    (draw-background! p)
+    (draw-floor! p h w)
+    (draw-player! p (:player state))
+    (draw-score! p (:score state))
+    (draw-controls! p h)
+    (when (:paused? state)
+      (draw-pause-overlay! p w h))))
