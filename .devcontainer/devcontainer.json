@@ -1,8 +1,15 @@
 {
   "name": "Clojure FP Classroom",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": false,
+      "installGradle": false
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
   },
   "forwardPorts": [8080, 9630],
   "portsAttributes": {
@@ -15,6 +22,7 @@
       "onAutoForward": "silent"
     }
   },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -23,12 +31,11 @@
         "gruntfuggly.todo-tree"
       ],
       "settings": {
-        "editor.formatOnSave": false,
-        "calva.paredit.defaultKeyMap": "strict",
         "editor.fontFamily": "'Cascadia Code', 'Fira Code', monospace",
         "editor.fontLigatures": true,
         "editor.bracketPairColorization.enabled": true,
         "editor.guides.bracketPairs": true,
+        "calva.paredit.defaultKeyMap": "strict",
         "[clojure]": {
           "editor.wordSeparators": "\t ()\"':,;~@#$%^&{}[]`",
           "editor.autoClosingBrackets": "always",
@@ -36,7 +43,5 @@
         }
       }
     }
-  },
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "remoteUser": "codespace"
+  }
 }
